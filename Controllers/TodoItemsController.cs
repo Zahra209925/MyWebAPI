@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyWebAPI.Models;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace MyWebAPI.Controllers
 {
@@ -9,22 +10,23 @@ namespace MyWebAPI.Controllers
 	[ApiController]
 	public class TodoItemsController : ControllerBase
 	{
-		private static List<TodoItem> _todoItems = new List<TodoItem>
+		private readonly TodoContext _context;
+
+		public TodoItemsController(TodoContext context)
 		{
-			new TodoItem { Id = 1, Name = "Learn .NET", IsComplete = false },
-			new TodoItem { Id = 2, Name = "Build API", IsComplete = false }
-		};
+			_context = context;
+		}
 
 		[HttpGet]
-		public ActionResult<IEnumerable<TodoItem>> GetTodoItems()
+		public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
 		{
-			return _todoItems;
+			return await _context.TodoItems.ToListAsync();
 		}
 
 		[HttpGet("{id}")]
-		public ActionResult<TodoItem> GetTodoItem(long id)
+		public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
 		{
-			var todoItem = _todoItems.FirstOrDefault(t => t.Id == id);
+			var todoItem = await _context.TodoItems.FindAsync(id);
 
 			if (todoItem == null)
 			{

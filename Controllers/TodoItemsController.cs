@@ -1,48 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
-using MyWebAPI.Models;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 
-namespace MyWebAPI.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class TodoItemsController : ControllerBase
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class TodoItemsController : ControllerBase
+	[HttpGet]
+	public IActionResult Get()
 	{
-		private readonly TodoContext _context;
+		Log.Information("GET request received at /api/todoitems");
+		return Ok(new { Message = "TodoItems fetched successfully" });
+	}
 
-		public TodoItemsController(TodoContext context)
+	[HttpPost]
+	public IActionResult Post([FromBody] object todoItem)
+	{
+		if (todoItem == null)
 		{
-			_context = context;
+			Log.Error("POST request failed: TodoItem is null");
+			return BadRequest("TodoItem cannot be null");
 		}
 
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
-		{
-			return await _context.TodoItems.ToListAsync();
-		}
-
-		[HttpGet("{id}")]
-		public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
-		{
-			var todoItem = await _context.TodoItems.FindAsync(id);
-
-			if (todoItem == null)
-			{
-				return NotFound();
-			}
-
-			return todoItem;
-		}
-
-		[HttpPost]
-		public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
-		{
-			_context.TodoItems.Add(todoItem);
-			await _context.SaveChangesAsync();
-
-			return CreatedAtAction(nameof(GetTodoItem), new { id = todoItem.Id }, todoItem);
-		}
+		Log.Information("POST request received at /api/todoitems");
+		return Ok(new { Message = "TodoItem created successfully" });
 	}
 }
